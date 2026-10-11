@@ -14,9 +14,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-# ---------------------------------------------------------------------------
 # 1. CHARGEMENT ET PARAMÈTRES D'AFFICHAGE
-# ---------------------------------------------------------------------------
 
 df = pd.read_csv("dashboard_export.csv")
 os.makedirs("figures", exist_ok=True)
@@ -24,13 +22,8 @@ os.makedirs("figures", exist_ok=True)
 sns.set_theme(style="whitegrid", font_scale=1.0)
 PALETTE = sns.color_palette("Set2")
 
-# Le churn peut ne pas avoir été calculé (étape 4 sautée) : on le détecte
-churn_disponible = df["Churn_proba"].notna().any()
-
-# ---------------------------------------------------------------------------
-# 2. VISUEL 1 : RÉPARTITION DES SEGMENTS (donut)
+# 2. VISUEL 1 : Répartition des segments
 # Répond à : "combien de clients dans chaque groupe ?"
-# ---------------------------------------------------------------------------
 
 repartition = df["Segment_nom"].value_counts()
 
@@ -48,10 +41,8 @@ plt.tight_layout()
 plt.savefig("figures/1_repartition_segments.png", dpi=150)
 plt.close()
 
-# ---------------------------------------------------------------------------
-# 3. VISUEL 2 : DÉPENSE MOYENNE PAR SEGMENT (barres)
+# 3. VISUEL 2 : dépenses moyennes par segement (barres)
 # Répond à : "quels segments rapportent le plus ?"
-# ---------------------------------------------------------------------------
 
 depense_moyenne = (
     df.groupby("Segment_nom")["Monetary"].mean().sort_values(ascending=False)
@@ -71,11 +62,9 @@ plt.tight_layout()
 plt.savefig("figures/2_depense_moyenne_segment.png", dpi=150)
 plt.close()
 
-# ---------------------------------------------------------------------------
-# 4. VISUEL 3 : MATRICE VALEUR x RISQUE DE CHURN (heatmap)
+# 4. VISUEL 3 : matrice valeur x risque churn 
 # Répond à : "où sont les clients à forte valeur qui risquent de partir ?"
 # La case en haut à droite (forte valeur + risque élevé) est la priorité.
-# ---------------------------------------------------------------------------
 
 if churn_disponible:
     ordre_valeur = ["Faible valeur", "Valeur moyenne", "Forte valeur"]
@@ -103,12 +92,7 @@ if churn_disponible:
 else:
     print("Churn non calculé : visuels 3 et 4 ignorés (lance d'abord l'étape 4 puis l'étape 5).")
 
-# ---------------------------------------------------------------------------
-# 5. VISUEL 4 : TOP 15 CLIENTS PRIORITAIRES (tableau)
-# C'est la liste actionnable pour une équipe marketing : qui relancer en
-# premier. Triée par risque décroissant, parmi les clients à forte valeur.
-# ---------------------------------------------------------------------------
-
+# 5. VISUEL 4 : TOP 15 clients prioritaires
 if churn_disponible:
     prioritaires = (
         df[df["Valeur_client"] == "Forte valeur"]
